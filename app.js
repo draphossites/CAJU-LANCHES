@@ -8,6 +8,10 @@
     ['santa-terezinha', { name: 'Santa Terezinha', fee: 500 }],
     ['other', { name: 'Demais regiões', fee: 1000 }],
   ]);
+  const paymentMethods = new Map([
+    ['pix', 'Pix'],
+    ['cash', 'Dinheiro'],
+  ]);
   const STORAGE_KEY = 'caju-lanches-cart-v1';
   const MAX_QUANTITY = 99;
   const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -31,7 +35,8 @@
   const filters = document.querySelectorAll('[data-filter]');
   const menuCategories = document.querySelectorAll('[data-menu-category]');
   const requiredTextFields = ['customerName', 'street', 'streetNumber', 'neighborhood'];
-  const checkoutDraft = Object.fromEntries([...requiredTextFields, 'fulfillment', 'deliveryRegion', 'notes'].map((name) => [name, '']));
+  const checkoutFields = [...requiredTextFields, 'fulfillment', 'deliveryRegion', 'paymentMethod', 'notes'];
+  const checkoutDraft = Object.fromEntries(checkoutFields.map((name) => [name, '']));
   const cart = loadCart();
   let statusTimer;
   let clearStatusTimer;
@@ -246,6 +251,14 @@
               </div>
             </div>
           </fieldset>
+          <fieldset class="checkout-group">
+            <legend>Forma de pagamento</legend>
+            <div class="checkout-options">
+              ${[...paymentMethods].map(([id, name]) => `
+                <label class="checkout-option"><input type="radio" name="paymentMethod" value="${id}" required> ${escapeHtml(name)}</label>
+              `).join('')}
+            </div>
+          </fieldset>
           <label class="checkout-field">
             <span>Observações <span class="checkout-optional">(opcional)</span></span>
             <textarea name="notes" rows="2" maxlength="300"></textarea>
@@ -288,7 +301,7 @@
   }
 
   function orderSummary() {
-    const { customerName, fulfillment, street, streetNumber, deliveryRegion, neighborhood, notes } = checkoutDraft;
+    const { customerName, fulfillment, street, streetNumber, deliveryRegion, neighborhood, paymentMethod, notes } = checkoutDraft;
     const delivery = fulfillment === 'delivery';
     const { itemsSubtotal, deliveryFee, total } = orderTotals(fulfillment, deliveryRegion);
     const lines = [
@@ -313,6 +326,7 @@
       `*Subtotal dos lanches:* ${formatPrice(itemsSubtotal)}`,
       `*Taxa de entrega:* ${formatOrderAmount(deliveryFee)}`,
       `*Total do pedido:* ${formatOrderAmount(total)}`,
+      `*Forma de pagamento:* ${paymentMethods.get(paymentMethod)}`,
     );
     if (notes.trim()) lines.push('', `*Observações:* ${notes.trim()}`);
     lines.push('', 'Podem confirmar o pedido?');
@@ -320,7 +334,7 @@
   }
 
   function validateCheckout(form) {
-    for (const name of Object.keys(checkoutDraft)) {
+    for (const name of checkoutFields) {
       checkoutDraft[name] = form.elements.namedItem(name).value;
     }
     updateCheckout(form);
