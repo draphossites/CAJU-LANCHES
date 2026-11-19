@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#1b0e09">
+  <meta name="description" content="Confira o cardápio da Caju Lanches e monte seu pedido de xis e cachorro-quente para delivery pelo WhatsApp.">
+  <title>Caju Lanches | Cardápio e pedidos</title>
+  <link rel="icon" type="image/webp" href="img/logo-caju.webp">
+  <link rel="stylesheet" href="styles.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#cardapio">Ir para o cardápio</a>
+  <header class="site-header" id="inicio">
+    <div class="container header-inner">
+      <a class="brand" href="#inicio" aria-label="Caju Lanches, início">
+        <img src="img/logo-caju.webp" alt="" width="280" height="244">
+      </a>
+      <nav class="main-nav" aria-label="Navegação principal">
+        <a href="#cardapio">Cardápio</a>
+        <a href="#como-pedir">Como pedir</a>
+      </nav>
+      <button class="cart-button" type="button" data-open-cart aria-haspopup="dialog" aria-controls="cart-dialog">
+        <svg viewBox="0 0 24 24" aria-hidden="true" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 7.5h15l1 13h-17z"/><path d="M8.5 9V6a3.5 3.5 0 0 1 7 0v3"/></svg>
+        <span>Meu pedido</span>
+        <span class="cart-count" data-cart-count>0</span>
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <section class="menu-intro" aria-labelledby="intro-title">
+      <div class="container">
+        <h1 id="intro-title">Xis e cachorro-quente</h1>
+        <p>Delivery a partir das <strong>18h30</strong></p>
+      </div>
+    </section>
+
+    <section class="menu-section" id="cardapio" aria-labelledby="menu-title">
+      <div class="container">
+        <div class="menu-heading">
+          <h2 id="menu-title">Cardápio</h2>
+          <div class="filters" role="group" aria-label="Filtrar cardápio">
+            <button type="button" data-filter="all" aria-pressed="true">Todos</button>
+            <button type="button" data-filter="xis" aria-pressed="false">Xis</button>
+            <button type="button" data-filter="hotdog" aria-pressed="false">Cachorro-quente</button>
+          </div>
+        </div>
+
+        <section class="menu-category" data-menu-category="xis" aria-labelledby="xis-title">
+          <div class="category-heading">
+            <h3 id="xis-title">Xis</h3>
+            <img class="category-photo" src="img/xis-gaucho-foto.webp" alt="Xis gaúcho com pão prensado e recheio aparente, servido em uma lancheria" width="640" height="430">
+          </div>
+          <div class="product-grid">
+            <article class="product-card" data-category="xis" data-price="2500">
+              <div class="product-copy">
+                <h4>Xis Salada Tradicional</h4>
+                <p class="product-ingredients">Pão, bife, alface picada, tomate, 2 queijos, presunto, ovo, maionese, milho e ervilha.</p>
+                <div class="product-actions"><strong>R$ 25,00</strong><button type="button" class="choose-button" data-product="xis-salada" aria-label="Escolher Xis Salada Tradicional" aria-haspopup="dialog" aria-controls="product-dialog">Escolher <span aria-hidden="true">+</span></button></div>
+              </div>
+            </article>
+            <article class="product-card" data-category="xis" data-price="2800">
+              <div class="product-copy">
+                <h4>Xis Bacon</h4>
+                <p class="product-ingredients">Pão, bife, 120 g de bacon picado, alface picada, tomate, 2 queijos, presunto, maionese, milho e ervilha.</p>
+                <div class="product-actions"><strong>R$ 28,00</strong><button type="button" class="choose-button" data-product="xis-bacon" aria-label="Escolher Xis Bacon" aria-haspopup="dialog" aria-controls="product-dialog">Escolher <span aria-hidden="true">+</span></button></div>
+              </div>
+            </article>
+            <article class="product-card" data-category="xis" data-price="2600">
+              <div class="product-copy">
+                <h4>Xis Frango</h4>
+                <p class="product-ingredients">Pão, frango desfiado, alface picada, tomate, 2 queijos, presunto, maionese, milho e ervilha.</p>
+                <div class="product-actions"><strong>R$ 26,00</strong><button type="button" class="choose-button" data-product="xis-frango" aria-label="Escolher Xis Frango" aria-haspopup="dialog" aria-controls="product-dialog">Escolher <span aria-hidden="true">+</span></button></div>
+              </div>
+            </article>
+            <article class="product-card" data-category="xis" data-price="3200">
+              <div class="product-copy">
+                <h4>Xis da Casa</h4>
+                <p class="product-ingredients">Pão, 2 bifes, rúcula/alface, tomate, 2 queijos, presunto, ovo, maionese, milho e ervilha.</p>
+                <div class="product-actions"><strong>R$ 32,00</strong><button type="button" class="choose-button" data-product="xis-casa" aria-label="Escolher Xis da Casa" aria-haspopup="dialog" aria-controls="product-dialog">Escolher <span aria-hidden="true">+</span></button></div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <section class="menu-category" data-menu-category="hotdog" aria-labelledby="hotdog-title">
+          <div class="category-heading">
+            <h3 id="hotdog-title">Cachorro-quente</h3>
+            <img class="category-photo" src="img/cachorro-quente-foto.webp" alt="Cachorro-quente brasileiro com milho e batata palha" width="640" height="430" loading="lazy">
+          </div>
+          <div class="product-grid">
+            <article class="product-card" data-category="hotdog" data-price="1600">
+              <div class="product-copy">
+                <h4>Cachorro-quente Simples</h4>
+                <p class="product-ingredients">Pão de cachorro-quente, molho, milho, ervilha, maionese, catchup, mostarda, salsicha e batata palha.</p>
+                <div class="product-actions"><strong>R$ 16,00</strong><button type="button" class="choose-button" data-product="cachorro-simples" aria-label="Escolher Cachorro-quente Simples" aria-haspopup="dialog" aria-controls="product-dialog">Escolher <span aria-hidden="true">+</span></button></div>
+              </div>
+            </article>
+            <article class="product-card" data-category="hotdog" data-price="2000">
+              <div class="product-copy">
+                <h4>Cachorro-quente Duplo</h4>
+                <p class="product-ingredients">Pão de cachorro-quente, molho, milho, ervilha, maionese, catchup, mostarda, 2 salsichas e batata palha.</p>
+                <div class="product-actions"><strong>R$ 20,00</strong><button type="button" class="choose-button" data-product="cachorro-duplo" aria-label="Escolher Cachorro-quente Duplo" aria-haspopup="dialog" aria-controls="product-dialog">Escolher <span aria-hidden="true">+</span></button></div>
+              </div>
+            </article>
+          </div>
+        </section>
+
+        <details class="photo-note">
+          <summary>Fotos ilustrativas e créditos</summary>
+          <ul>
+            <li><a href="https://commons.wikimedia.org/wiki/File:Joe%27s_(4477899312).jpg">Foto do xis</a>, Marcelo Träsel, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC BY-SA 2.0</a>.</li>
+            <li><a href="https://commons.wikimedia.org/wiki/File:Cachorro-quente.jpg">Foto do cachorro-quente</a>, إيان, <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.</li>
+          </ul>
+          <p>As fotos foram recortadas e convertidas para WebP sob as mesmas licenças.</p>
+        </details>
+      </div>
+    </section>
+
+    <section class="order-info-section" id="como-pedir" aria-labelledby="order-info-title">
+      <div class="container order-info-inner">
+        <div>
+          <h2 id="order-info-title">Como pedir</h2>
+          <p>Adicione seus lanches à sacola, informe seu nome e endereço e envie o resumo pelo WhatsApp. A loja confirma a taxa de entrega e o total.</p>
+          <button class="btn btn-primary" type="button" data-open-cart aria-haspopup="dialog" aria-controls="cart-dialog">Abrir sacola</button>
+        </div>
+        <dl class="order-info-details">
+          <div><dt>Atendimento</dt><dd>A partir das 18h30</dd></div>
+          <div><dt>WhatsApp da loja</dt><dd><a href="https://wa.me/5554996848117" target="_blank" rel="noopener noreferrer" data-store-contact>(54) 99684-8117</a></dd></div>
+        </dl>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-inner">
+      <a class="brand" href="#inicio" aria-label="Caju Lanches, voltar ao início">
+        <img src="img/logo-caju.webp" alt="" width="280" height="244" loading="lazy">
+      </a>
+      <a href="#cardapio">Voltar ao cardápio</a>
+    </div>
+  </footer>
+
+  <button class="cart-button floating-cart" type="button" data-open-cart aria-haspopup="dialog" aria-controls="cart-dialog" hidden>
+    <svg viewBox="0 0 24 24" aria-hidden="true" width="21" height="21" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 7.5h15l1 13h-17z"/><path d="M8.5 9V6a3.5 3.5 0 0 1 7 0v3"/></svg>
+    <span>Sacola</span>
+    <span class="cart-count" data-cart-count>0</span>
+  </button>
+
+  <dialog id="product-dialog" class="shop-dialog" aria-labelledby="product-title"><div id="product-content"></div></dialog>
+  <dialog id="cart-dialog" class="shop-dialog" aria-labelledby="cart-title"><div id="cart-content"></div></dialog>
+  <div class="live-status" id="site-status" role="status" aria-live="polite"></div>
+</body>
+</html>
