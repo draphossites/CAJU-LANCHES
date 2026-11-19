@@ -2,6 +2,12 @@
   'use strict';
 
   const STORE_WHATSAPP = '5554996848117';
+  const deliveryRegions = new Map([
+    ['morro-tico-tico', { name: 'Morro Tico Tico', fee: 500 }],
+    ['bom-fim-alto', { name: 'Bom Fim Alto', fee: 500 }],
+    ['santa-terezinha', { name: 'Santa Terezinha', fee: 500 }],
+    ['other', { name: 'Demais regiões', fee: 1000 }],
+  ]);
   const STORAGE_KEY = 'caju-lanches-cart-v1';
   const MAX_QUANTITY = 99;
   const currency = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
@@ -24,8 +30,8 @@
   const siteStatus = document.querySelector('#site-status');
   const filters = document.querySelectorAll('[data-filter]');
   const menuCategories = document.querySelectorAll('[data-menu-category]');
-  const addressFields = ['customerName', 'street', 'streetNumber', 'neighborhood'];
-  const checkoutDraft = Object.fromEntries([...addressFields, 'notes'].map((name) => [name, '']));
+  const requiredTextFields = ['customerName', 'street', 'streetNumber', 'neighborhood'];
+  const checkoutDraft = Object.fromEntries([...requiredTextFields, 'fulfillment', 'deliveryRegion', 'notes'].map((name) => [name, '']));
   const cart = loadCart();
   let statusTimer;
   let clearStatusTimer;
@@ -157,6 +163,18 @@
     return [...cart].reduce((sum, [id, quantity]) => sum + products.get(id).price * quantity, 0);
   }
 
+  function orderTotals(fulfillment, region) {
+    const itemsSubtotal = subtotal();
+    const fees = { delivery: deliveryRegions.get(region)?.fee, pickup: 0 };
+    const deliveryFee = fees[fulfillment] ?? null;
+    const total = deliveryFee === null ? null : itemsSubtotal + deliveryFee;
+    return { itemsSubtotal, deliveryFee, total };
+  }
+
+  function formatOrderAmount(amount) {
+    return amount === null ? '—' : formatPrice(amount);
+  }
+
   function renderCart() {
     if (!cart.size) {
       cartContent.innerHTML = `
@@ -188,34 +206,56 @@
       </div>
       <form id="checkout-form" class="checkout-form" aria-labelledby="checkout-title" novalidate>
         <div class="dialog-body">
-          <h3 class="checkout-heading" id="checkout-title">Dados para entrega</h3>
+          <h3 class="checkout-heading" id="checkout-title">Dados do pedido</h3>
           <label class="checkout-field">
-            Seu nome
+            Nome do cliente
             <input type="text" name="customerName" autocomplete="name" maxlength="100" required>
           </label>
-          <div class="checkout-address-grid">
-            <label class="checkout-field">
-              Rua
-              <input type="text" name="street" autocomplete="address-line1" maxlength="120" required>
-            </label>
-            <label class="checkout-field">
-              Número
-              <input type="text" name="streetNumber" maxlength="24" required>
-            </label>
-            <label class="checkout-field">
-              Bairro
-              <input type="text" name="neighborhood" autocomplete="address-level3" maxlength="80" required>
-            </label>
-          </div>
+          <fieldset class="checkout-group">
+            <legend>Tipo de recebimento</legend>
+            <div class="checkout-options">
+              <label class="checkout-option"><input type="radio" name="fulfillment" value="delivery" required> Entrega</label>
+              <label class="checkout-option"><input type="radio" name="fulfillment" value="pickup" required> Retirada</label>
+            </div>
+          </fieldset>
+          <fieldset class="checkout-group checkout-address" hidden disabled>
+            <legend>Endereço de entrega</legend>
+            <div class="checkout-address-grid">
+              <label class="checkout-field">
+                Rua
+                <input type="text" name="street" autocomplete="address-line1" maxlength="120" required>
+              </label>
+              <label class="checkout-field">
+                Número
+                <input type="text" name="streetNumber" maxlength="24" required>
+              </label>
+              <div class="checkout-region">
+                <label class="checkout-field">
+                  Bairro ou região
+                  <span class="checkout-select">
+                    <select name="deliveryRegion" required>
+                      <option value="" selected disabled>Selecione o bairro</option>
+                      ${[...deliveryRegions].map(([id, { name, fee }]) => `<option value="${id}">${escapeHtml(name)} — ${formatPrice(fee)}</option>`).join('')}
+                    </select>
+                  </span>
+                </label>
+                <label class="checkout-field" data-other-neighborhood hidden>
+                  Nome do bairro
+                  <input type="text" name="neighborhood" autocomplete="address-level3" maxlength="80" required disabled>
+                </label>
+              </div>
+            </div>
+          </fieldset>
           <label class="checkout-field">
             <span>Observações <span class="checkout-optional">(opcional)</span></span>
-            <textarea name="notes" rows="2" maxlength="300" placeholder="Ex. complemento do endereço"></textarea>
+            <textarea name="notes" rows="2" maxlength="300"></textarea>
           </label>
         </div>
         <div class="dialog-footer">
           <div class="checkout-totals" aria-live="polite" aria-atomic="true">
             <div class="dialog-total"><span>Subtotal dos lanches</span><strong>${formatPrice(subtotal())}</strong></div>
-            <p class="order-note">Confirme a taxa de entrega e o valor final pelo WhatsApp.</p>
+            <div class="dialog-total"><span>Taxa de entrega</span><strong data-checkout-fee>—</strong></div>
+            <div class="dialog-total checkout-grand-total"><span>Total do pedido</span><strong data-checkout-total>—</strong></div>
           </div>
           <button class="dialog-action btn btn-primary" type="submit">Enviar pedido pelo WhatsApp</button>
           <p class="order-note">Revise a mensagem e confirme o envio no WhatsApp.</p>
@@ -229,29 +269,53 @@
     for (const [name, value] of Object.entries(checkoutDraft)) {
       form.elements.namedItem(name).value = value;
     }
+    updateCheckout(form);
+  }
+
+  function updateCheckout(form) {
+    const { fulfillment, deliveryRegion } = checkoutDraft;
+    const delivery = fulfillment === 'delivery';
+    const askOtherNeighborhood = delivery && deliveryRegion === 'other';
+    const address = form.querySelector('.checkout-address');
+    const { deliveryFee, total } = orderTotals(fulfillment, deliveryRegion);
+
+    address.hidden = !delivery;
+    address.disabled = !delivery;
+    form.querySelector('[data-other-neighborhood]').hidden = !askOtherNeighborhood;
+    form.elements.namedItem('neighborhood').disabled = !askOtherNeighborhood;
+    form.querySelector('[data-checkout-fee]').textContent = formatOrderAmount(deliveryFee);
+    form.querySelector('[data-checkout-total]').textContent = formatOrderAmount(total);
   }
 
   function orderSummary() {
-    const { customerName, street, streetNumber, neighborhood, notes } = checkoutDraft;
+    const { customerName, fulfillment, street, streetNumber, deliveryRegion, neighborhood, notes } = checkoutDraft;
+    const delivery = fulfillment === 'delivery';
+    const { itemsSubtotal, deliveryFee, total } = orderTotals(fulfillment, deliveryRegion);
     const lines = [
       '*PEDIDO — CAJU LANCHES*',
       '',
-      `*Nome:* ${customerName.trim()}`,
-      '*Recebimento:* Entrega',
-      `*Endereço:* ${street.trim()}, ${streetNumber.trim()}`,
-      `*Bairro:* ${neighborhood.trim()}`,
-      '',
-      '*Itens do pedido*',
+      `*Nome do cliente:* ${customerName.trim()}`,
+      `*Recebimento:* ${delivery ? 'Entrega' : 'Retirada'}`,
     ];
-
-    for (const [id, quantity] of cart) {
-      const { name, price } = products.get(id);
-      lines.push(`• ${quantity} × ${name} — ${formatPrice(price * quantity)}`);
+    if (delivery) {
+      const neighborhoodName = deliveryRegion === 'other' ? neighborhood.trim() : deliveryRegions.get(deliveryRegion).name;
+      lines.push(`*Endereço:* ${street.trim()}, ${streetNumber.trim()}`, `*Bairro:* ${neighborhoodName}`);
     }
 
-    lines.push('', `*Subtotal dos lanches:* ${formatPrice(subtotal())}`, '*Taxa de entrega e valor final:* a confirmar');
+    lines.push('', '*Itens do pedido*');
+    for (const [id, quantity] of cart) {
+      const { name, price } = products.get(id);
+      lines.push(`• ${quantity} × ${name} (${formatPrice(price)} por unidade) — ${formatPrice(price * quantity)}`);
+    }
+
+    lines.push(
+      '',
+      `*Subtotal dos lanches:* ${formatPrice(itemsSubtotal)}`,
+      `*Taxa de entrega:* ${formatOrderAmount(deliveryFee)}`,
+      `*Total do pedido:* ${formatOrderAmount(total)}`,
+    );
     if (notes.trim()) lines.push('', `*Observações:* ${notes.trim()}`);
-    lines.push('', 'Podem confirmar o pedido e o valor da entrega?');
+    lines.push('', 'Podem confirmar o pedido?');
     return lines.join('\n');
   }
 
@@ -259,7 +323,8 @@
     for (const name of Object.keys(checkoutDraft)) {
       checkoutDraft[name] = form.elements.namedItem(name).value;
     }
-    for (const name of addressFields) {
+    updateCheckout(form);
+    for (const name of requiredTextFields) {
       const field = form.elements.namedItem(name);
       field.setCustomValidity(field.value.trim() ? '' : 'Preencha este campo.');
     }
@@ -318,6 +383,7 @@
     if (!Object.hasOwn(checkoutDraft, field.name)) return;
     checkoutDraft[field.name] = field.value;
     field.setCustomValidity('');
+    if (field.name === 'fulfillment' || field.name === 'deliveryRegion') updateCheckout(field.form);
     field.form.querySelector('[data-copy-fallback]').hidden = true;
     field.form.querySelector('[data-copy-status]').hidden = true;
   });
